@@ -88,9 +88,9 @@ app.get('/pelicula/:id', (req, res) => {
         GROUP_CONCAT(DISTINCT l.language_name) AS language, 
         GROUP_CONCAT(DISTINCT p.company_name) AS production_company, 
         GROUP_CONCAT(DISTINCT c.country_name) AS production_country, 
-        GROUP_CONCAT(DISTINCT pers.person_name) AS cast_members, 
-        GROUP_CONCAT(DISTINCT pers2.person_name) AS crew_members, 
-        GROUP_CONCAT(DISTINCT pers3.person_name) AS directors 
+        Gactor.person_id AS actor_id, actor.person_name AS actor_name, mc2.character_name, mc2.cast_order,
+        pers2.person_id AS crew_member_id, pers2.person_name AS crew_member_name, mc3.department_name, mc3.job,
+        pers3.person_id AS director_id, pers3.person_name AS director_name
         FROM movie m 
         LEFT JOIN movie_genres mg ON m.movie_id = mg.movie_id 
         LEFT JOIN genre g ON mg.genre_id = g.genre_id 
@@ -103,7 +103,7 @@ app.get('/pelicula/:id', (req, res) => {
         LEFT JOIN production_country pc ON m.movie_id = pc.movie_id 
         LEFT JOIN country c ON pc.country_id = c.country_id 
         LEFT JOIN movie_cast mc2 ON m.movie_id = mc2.movie_id 
-        LEFT JOIN person pers ON mc2.person_id = pers.person_id  
+        LEFT JOIN person actor ON mc2.person_id = actor.person_id  
         LEFT JOIN movie_crew mc3 ON m.movie_id = mc3.movie_id  
         LEFT JOIN person pers2 ON mc3.person_id = pers2.person_id  
         LEFT JOIN movie_crew mc4 ON m.movie_id = mc4.movie_id AND mc4.job = 'Director'  
@@ -117,8 +117,41 @@ app.get('/pelicula/:id', (req, res) => {
         if (err) {
             console.error(err);
             res.status(500).send('Error al cargar los datos de la película.');
+        } else if (rows.length === 0) {
+            res.status(404).send('Película no encontrada.');
         } else {
-            res.render('pelicula', { movie: rows[0] });
+            const row = rows[0]; // Usamos la primera fila para datos generales de la película
+            const movieData = {
+                id: row.movie_id,
+                title: row.title,
+                release_date: row.release_date,
+                overview: row.overview,
+                genre: row.genre,
+                keyword: row.keyword,
+                language: row.language,
+                production_company: row.production_company,
+                production_country: row.production_country,
+                directors: [],
+                cast: [],
+                crew: [],
+            };
+
+            // Llenar la lista de directores
+            if (row.directors) {
+                movieData.directors = row.directors.split(',');
+            }
+
+            // Crear un objeto para almacenar el elenco (actores)
+            if (row.cast_members) {
+                movieData.cast = row.cast_members.split(',');
+            }
+
+            // Crear un objeto para almacenar el crew (excepto directores)
+            if (row.crew_members) {
+                movieData.crew = row.crew_members.split(',');
+            }
+
+            res.render('pelicula', { movie: movieData });
         }
     });
 });
@@ -182,5 +215,5 @@ app.get('/director/:id', (req, res) => {
 
 // Iniciar el servidor
 app.listen(port, () => {
-    console.log(`UWU http://localhost:${port}`);
+    console.log(`http://localhost:${port}`);
 });
