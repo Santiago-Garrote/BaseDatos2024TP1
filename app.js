@@ -88,8 +88,8 @@ app.get('/pelicula/:id', (req, res) => {
         GROUP_CONCAT(DISTINCT l.language_name) AS language, 
         GROUP_CONCAT(DISTINCT p.company_name) AS production_company, 
         GROUP_CONCAT(DISTINCT c.country_name) AS production_country, 
-        Gactor.person_id AS actor_id, actor.person_name AS actor_name, mc2.character_name, mc2.cast_order,
-        pers2.person_id AS crew_member_id, pers2.person_name AS crew_member_name, mc3.department_name, mc3.job,
+        actor.person_id AS actor_id, actor.person_name AS actor_name, mc2.character_name, mc2.cast_order,
+        pers2.person_id AS crew_member_id, pers2.person_name AS crew_member_name, mc3.job,
         pers3.person_id AS director_id, pers3.person_name AS director_name
         FROM movie m 
         LEFT JOIN movie_genres mg ON m.movie_id = mg.movie_id 
@@ -124,6 +124,14 @@ app.get('/pelicula/:id', (req, res) => {
             const movieData = {
                 id: row.movie_id,
                 title: row.title,
+                popularity: row.popularity,
+                homepage: row.homepage,
+                reveneu: row.reveneu,
+                movie_status: row.movie_status,
+                tagline: row.tagline,
+                vote_average: row.vote_average,
+                vote_count: row.vote_count,
+                runtime: row.runtime,
                 release_date: row.release_date,
                 overview: row.overview,
                 genre: row.genre,
@@ -136,21 +144,20 @@ app.get('/pelicula/:id', (req, res) => {
                 crew: [],
             };
 
-            // Llenar la lista de directores
+            // Llena la lista de directores
             if (row.directors) {
                 movieData.directors = row.directors.split(',');
             }
 
-            // Crear un objeto para almacenar el elenco (actores)
+            // Crear un objeto para almacenar los actores actores
             if (row.cast_members) {
                 movieData.cast = row.cast_members.split(',');
             }
 
-            // Crear un objeto para almacenar el crew (excepto directores)
+            // Crear un objeto para almacenar el crew sin directores
             if (row.crew_members) {
                 movieData.crew = row.crew_members.split(',');
             }
-
             res.render('pelicula', { movie: movieData });
         }
     });
