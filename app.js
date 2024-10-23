@@ -151,14 +151,14 @@ app.get('/pelicula/:id', (req, res) => {
 
             // Crear un objeto para almacenar los actores actores
             if (row.cast_members) {
-                movieData.cast = row.cast_members.split(',');
+                movies.cast = row.cast_members.split(',');
             }
 
             // Crear un objeto para almacenar el crew sin directores
             if (row.crew_members) {
-                movieData.crew = row.crew_members.split(',');
+                movies.crew = row.crew_members.split(',');
             }
-            res.render('pelicula', { movie: movieData });
+            res.render('pelicula', { movies });
         }
     });
 });
