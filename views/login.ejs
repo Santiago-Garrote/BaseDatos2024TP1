@@ -7,14 +7,25 @@
     <body>
         <h1>Ingrese sus datos</h1>
         <form>
-            <label for="uName">User Name:</label><br>
+            <% if (failedAccess) { %>
+                <h1> </h1>
+                <p style="color: <%= "red" %>;">Nombre de usuario o contraseña incorrectos.</p>
+                <h1> </h1>
+            <% } %>
+            <label for="uName">Nombre de usuario:</label><br>
             <input type="text" id="uName" name="uName"><br>
-            <label for="uPassword">User Password:</label><br>
+            <h1> </h1> <%# Espaciado %>
+            <label for="uPassword">Contraseña:</label><br>
             <input type="password" id="uPassword" name="uPassword"><br>
+            <h1> </h1> <%# Espaciado %>
+
             <div>
                 <button type="submit">Log in</button>
                 <button type="button" onclick="window.location.href= 'http://localhost:3000/signUp'">Register</button><br>
-                <a href="http://localhost:3000/login?uName=-1&uPassword=-1">Navegar de forma anonima</a>
+
+                <h1> </h1> <%# Espaciado %>
+
+                <a href="http://localhost:3000/login?uName=-1&uPassword=-1">Navegar de forma anónima</a>
             </div>
         </form>
     </body>

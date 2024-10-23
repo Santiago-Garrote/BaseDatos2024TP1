@@ -24,16 +24,18 @@ app.get('/login', (req, res) => {
     const user_password = req.query.uPassword;
 
     if (user_name === undefined  || user_password === undefined) {
-        res.render('login');
+        res.render('login', {failedAccess: true}); //failedAccess indica que el usuario no existe o no coinciden el usuario y la contraseña
     } else if (user_name === "-1" && user_password === "-1") {
         res.cookie('user_id', "-1");
         res.redirect('./index');
     } else {
-        const userQuery = 'SELECT * FROM User WHERE user_name = ? AND user_password = ?';
-        db.all(
-            userQuery,
-            [user_name, user_password],
-            (err, result) => {
+        //Busca al usuario y la contraseña
+        const userQuery = `
+            SELECT *
+            FROM User
+            WHERE user_name = ? AND user_password = ?
+            `;
+        db.all(userQuery, [user_name, user_password], (err, result) => {
                 if (err) {
                     console.log(err);
                     res.status(500).send('Error en la búsqueda.');
@@ -42,7 +44,7 @@ app.get('/login', (req, res) => {
                         res.cookie('user_id', result[0]["user_id"]);
                         res.redirect('./index');
                     } else {
-                        res.render('login');
+                        res.render('login', {failedAccess: true});
                     }
                 }
             }
