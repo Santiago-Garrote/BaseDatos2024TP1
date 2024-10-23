@@ -121,7 +121,7 @@ app.get('/pelicula/:id', (req, res) => {
             res.status(404).send('Película no encontrada.');
         } else {
             const row = rows[0]; // Usamos la primera fila para datos generales de la película
-            const movieData = {
+            const movies = {
                 id: row.movie_id,
                 title: row.title,
                 popularity: row.popularity,
@@ -146,7 +146,7 @@ app.get('/pelicula/:id', (req, res) => {
 
             // Llena la lista de directores
             if (row.directors) {
-                movieData.directors = row.directors.split(',');
+                movies.directors = row.directors.split(',');
             }
 
             // Crear un objeto para almacenar los actores actores
