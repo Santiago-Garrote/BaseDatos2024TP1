@@ -8,6 +8,12 @@
 <h1><%= movies.title %></h1>
 
 <h3>Fecha de lanzamiento: <%= movies.release_date %></h3>
+<h3>Directores:</h3>
+<ul>
+    <% movies.directors.forEach((director) => { %>
+        <li><a href="/director/<%= director.id %>"><%= director.name %></a></li>
+    <% }); %>
+</ul>
 <h3>Popularidad: <%= movies.popularity %></h3>
 <h3>Presupuesto: <%= movies.budget %></h3>
 <h3>Recaudación: <%= movies.reveneu %></h3>
@@ -39,14 +45,6 @@
     <h3>Página oficial:</h3>
     <a href="<%= movies.homepage %>"><%= movies.homepage %></a>
 <% } %>
-
-<h3>Directores:</h3>
-<ul>
-    <% movies.directors.forEach((director) => { %>
-        <li><a href="/director/<%= director.id %>"><%= director.name %></a></li>
-    <% }); %>
-</ul>
-
 <h3>Elenco:</h3>
 <ul>
     <% movies.cast.forEach((actor) => { %>
