@@ -11,7 +11,7 @@
 <h3>Directores:</h3>
 <ul>
     <% movies.directors.forEach((director) => { %>
-        <li><a href="/director/<%= director.id %>"><%= director.name %></a></li>
+        <li><a href="/persona/<%= director.id %>"><%= director.name %></a></li>
     <% }); %>
 </ul>
 <h3>Popularidad: <%= movies.popularity %></h3>
@@ -48,7 +48,7 @@
 <h3>Elenco:</h3>
 <ul>
     <% movies.cast.forEach((actor) => { %>
-        <li><a href="/actor/<%= actor.id %>"><%= actor.name %></a> - <%= actor.character %></li>
+        <li><a href="/persona/<%= actor.id %>"><%= actor.name %></a> - <%= actor.character %></li>
     <% }); %>
 </ul>
 <h3>Crew:</h3>
@@ -58,6 +58,6 @@
     <% }); %>
 </ul>
 
-<div id="inicio"><a href="/">Inicio</a></div>
+<div id="inicio"><a href="/index">Inicio</a></div>
 </body>
 </html>
