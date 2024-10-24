@@ -7,6 +7,10 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middleware to parse form data and JSON
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 // Serve static files from the "views" directory
 app.use(express.static('views'));
 app.use(cookieParser());
@@ -209,6 +213,7 @@ app.get('/buscar', (req, res) => {
 // Ruta para la página de datos de una película particular
 app.get('/pelicula/:id', (req, res) => {
     const movieId = req.params.id;
+    const userId = req.cookies['user_id'];
 
     // Consulta SQL para obtener los datos de la película, elenco y crew
     const query = `
@@ -241,7 +246,7 @@ app.get('/pelicula/:id', (req, res) => {
         } else {
             // Organizar los datos en un objeto de película con elenco y crew
             const movieData = {
-                id: rows[0].id,
+                id: rows[0].movie_id,
                 title: rows[0].title,
                 release_date: rows[0].release_date,
                 overview: rows[0].overview,
@@ -340,7 +345,7 @@ app.get('/pelicula/:id', (req, res) => {
                 }
             });
 
-            res.render('pelicula', { movie: movieData });
+            res.render('pelicula', { movie: movieData, user_id: userId });
         }
     });
 });
@@ -413,6 +418,92 @@ app.get('/buscar-keyword/', (req, res) => {
         }
     );
 })
+
+// Agregar una película a favoritos
+app.post('/addFavorite', (req, res) => {
+    const { user_id, movie_id, rating, review } = req.body;
+
+    // Debugging logs
+    console.log('Add Favorite Data:', req.body);
+
+    if (!user_id || !movie_id) {
+        return res.status(400).send('Error: user_id or movie_id is missing.');
+    }
+
+    // Check if the user already has this movie as a favorite
+    const checkSql = `SELECT 1 FROM movie_user WHERE user_id = ? AND movie_id = ?`;
+    db.get(checkSql, [user_id, movie_id], (err, row) => {
+        if (err) {
+            console.error('Database Error (Check Existence):', err.message);
+            return res.status(500).send('Error al verificar favoritos.');
+        }
+
+        if (row) {
+            // If the movie is already in the user's favorites, return an error or update the rating/review
+            return res.status(400).send('Error: la película ya está en favoritos.');
+        }
+
+        // If not a duplicate, proceed to insert
+        const insertSql = `INSERT INTO movie_user (user_id, movie_id, rating, review) VALUES (?, ?, ?, ?)`;
+        db.run(insertSql, [user_id, movie_id, rating, review], function (err) {
+            if (err) {
+                console.error('Database Error (Insert):', err.message);
+                return res.status(500).send('Error al agregar a favoritos.');
+            }
+            res.redirect(`/user/${user_id}`);
+        });
+    });
+});
+
+
+
+//Eliminar una película de favoritos
+app.post('/removeFavorite', (req, res) => {
+    const { user_id, movie_id } = req.body;
+
+    console.log('Remove Favorite Data:', req.body);
+
+    if (!user_id || !movie_id) {
+        return res.status(400).send('Error: user_id or movie_id is missing.');
+    }
+
+    const sql = `DELETE FROM movie_user WHERE user_id = ? AND movie_id = ?`;
+    db.run(sql, [user_id, movie_id], function (err) {
+        if (err) {
+            console.error('Database Error:', err.message);
+            return res.status(500).send('Error al eliminar de favoritos.');
+        }
+        res.redirect(`/user/${user_id}`);
+    });
+});
+
+
+//Mostrar las películas favoritas de un usuario
+app.get('/user/:user_id', (req, res) => {
+    const user_id = req.params.user_id;
+    const userDataQuery = `SELECT * FROM User WHERE user_id = ?`;
+    const favoriteMoviesQuery = `
+        SELECT movie.title, movie_user.rating, movie_user.review
+        FROM movie_user
+        JOIN movie ON movie_user.movie_id = movie.movie_id
+        WHERE movie_user.user_id = ?
+    `;
+    
+    db.get(userDataQuery, [user_id], (err, user) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error al obtener datos del usuario.');
+        }
+        db.all(favoriteMoviesQuery, [user_id], (err, favorites) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error al obtener películas favoritas.');
+            }
+            res.render('user/userProfile', { user_name: user.user_name, user_email: user.user_email, favorites });
+        });
+    });
+});
+
 
 // Iniciar el servidor
 app.listen(port, () => {

@@ -7,6 +7,16 @@
 <body>
 <h1>Usuario: <%= user_name %></h1>
 <h3>Email: <%= user_email %></h3>
+<h2>Películas favoritas de <%= user_name %></h2>
+<ul>
+    <% favorites.forEach(favorite => { %>
+        <li>
+            <strong><%= favorite.title %></strong>
+            <p>Puntuación: <%= favorite.rating %></p>
+            <p>Opinión: <%= favorite.review %></p>
+        </li>
+    <% }) %>
+</ul>
 <% if (user_loggedIn) {%>
     <button onclick="window.location.href= 'http://localhost:3000/deleteUser'">Eliminar cuenta</button>
     <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar informacion</button>
