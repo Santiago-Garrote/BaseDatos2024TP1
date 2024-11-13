@@ -8,15 +8,12 @@
     <h1>Modificar usuario <%= user_name %></h1>
     <form>
         <label for="userName">User Name:</label><br>
-        <input type="text" id="userName" name="userName" value="<%= user_name %>">
-        <br><br>
+        <input type="text" id="userName" name="userName" value="<%= user_name %>"><br>
         <label for="userPassword">User Password:</label><br>
-        <input type="password" id="userPassword" name="userPassword" value="<%= user_password %>">
-        <br><br>
+        <input type="password" id="userPassword" name="userPassword" value="<%= user_password %>"><br>
         <label for="userEmail">User e-mail:</label><br>
-        <input type="email" id="userEmail" name="userEmail" value="<%= user_email %>">
-        <br><br><br>
-        <div id="profile"><a href="/userProfile">Modificar</a></div>
+        <input type="email" id="userEmail" name="userEmail" value="<%= user_email %>"><br>
+        <button type="submit">Modificar</button>
     </form>
 </body>
 </html>

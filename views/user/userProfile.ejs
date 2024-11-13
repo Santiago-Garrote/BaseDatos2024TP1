@@ -8,9 +8,8 @@
 <h1>Usuario: <%= user_name %></h1>
 <h3>Email: <%= user_email %></h3>
 <% if (user_loggedIn) {%>
-    <button onclick="window.location.href= 'http://localhost:3000/deleteUser'" style="margin-bottom: 10px;">Eliminar cuenta</button>
-    <button onclick="window.location.href= 'http://localhost:3000/modifyUser'" style="margin-bottom: 10px;">Modificar información</button>
-    <button onclick="window.location.href= 'http://localhost:3000/login'" style="margin-bottom: 10px;">Salir de la cuenta</button>
+    <button onclick="window.location.href= 'http://localhost:3000/deleteUser'">Eliminar cuenta</button>
+    <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar informacion</button>
 <%}%>
 <div id="inicio"><a href="/index">Inicio</a></div>
 </body>
