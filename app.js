@@ -69,14 +69,12 @@ app.get('/signUp', (req, res) => {
     const userEmail = req.query.uEmail;
 
     if (userName === '' || userPassword === '' || userEmail === '') {
-        res.render('signUp', {emptyData: true});
+        res.render('signUp', {emptyData: true, error: false});
         return;
     }
 
     const signUpQuery = 'INSERT INTO User(user_name, user_password, user_email, user_super) VALUES (?,?,?, 0) RETURNING user_id'
-    if(!userName || !userPassword || !userEmail){
-        return res.render('signup', {error: "Completar todos los datos"});
-    }
+
     db.all(
         signUpQuery,
         [userName, userPassword, userEmail],
@@ -84,18 +82,18 @@ app.get('/signUp', (req, res) => {
             if (userName !== undefined  && userPassword !== undefined) {
                 if (err) {
                     if(err.code === 'SQLITE_CONSTRAINT' && err.message.includes('User.user_email') || err.code === 'SQLITE_CONSTRAINT' && err.message.includes('User.user_name') ){
-                        res.render('signUp', { error: "Email o Usuario ya utilizado"});
+                        res.render('signUp', {emptyData: false, error: true, errorMessage: "Email o Usuario ya utilizado"});
                     }
                     else{
                         console.log(err);
-                        res.render('signup', { error: "Algo fallo en el registro"});
+                        res.render('signup', {emptyData: false, error: true, errorMessage: "Algo fallo en el registro"});
                     }
                 } else{
                     res.cookie('user_id', result[0]["user_id"]);
                     res.render('signUpExitoso', {user_name: userName, user_password: userPassword});
                 }
             } else {
-                res.render('signUp', {emptyData: false});
+                res.render('signUp', {emptyData: false, error: false});
             }
         }
     )
