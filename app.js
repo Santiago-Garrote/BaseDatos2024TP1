@@ -128,8 +128,6 @@ app.get('/userProfile', (req, res) => {
     }
 });
 
-
-
 // Ruta para modificar un usuario
 app.get('/modifyUser', (req, res) => {
     const userId = req.cookies['user_id']
@@ -450,12 +448,11 @@ app.post('/addFavorite', (req, res) => {
     // Debugging logs
     console.log('Add Favorite Data:', req.body);
 
-    // Validación básica
     if (!user_id || !movie_id) {
         return res.status(400).send('Error: user_id or movie_id is missing.');
     }
 
-    // Verificar si el usuario ya tiene esta película en sus favoritos
+    // Check if the user already has this movie as a favorite
     const checkSql = `SELECT 1 FROM movie_user WHERE user_id = ? AND movie_id = ?`;
     db.get(checkSql, [user_id, movie_id], (err, row) => {
         if (err) {
@@ -464,24 +461,24 @@ app.post('/addFavorite', (req, res) => {
         }
 
         if (row) {
-            // Si la película ya está en favoritos, devolver error o actualizar los datos
-            return res.status(400).send('Error: la película ya está en favoritos.');
+            // If the movie is already in the user's favorites, return an error with a link to go back
+            return res.render('error', { 
+                message: 'Error: la película ya está en favoritos.', 
+                link: '/userProfile' // You can customize this as needed
+            });
         }
 
-        // Si no está duplicada, proceder a insertar
+        // If not a duplicate, proceed to insert
         const insertSql = `INSERT INTO movie_user (user_id, movie_id, rating, review) VALUES (?, ?, ?, ?)`;
-        db.run(insertSql, [user_id, movie_id, rating || null, review || null], function (err) {
+        db.run(insertSql, [user_id, movie_id, rating, review], function (err) {
             if (err) {
                 console.error('Database Error (Insert):', err.message);
                 return res.status(500).send('Error al agregar a favoritos.');
             }
-            console.log('Película agregada a favoritos:', this.lastID);
             res.redirect(`/userProfile`);
         });
     });
 });
-
-
 
 
 // Eliminar una película de favoritos
@@ -490,37 +487,37 @@ app.post('/removeFavorite', (req, res) => {
 
     console.log('Remove Favorite Data:', req.body);
 
-    // Validar que se recibieron los datos necesarios
     if (!user_id || !movie_id) {
         return res.status(400).send('Error: user_id or movie_id is missing.');
     }
 
-    // Verificar si la película está en los favoritos del usuario
     const checkSql = `SELECT 1 FROM movie_user WHERE user_id = ? AND movie_id = ?`;
     db.get(checkSql, [user_id, movie_id], (err, row) => {
         if (err) {
             console.error('Database Error (Check Existence):', err.message);
-            return res.status(500).send('Error al verificar la película en favoritos.');
+            return res.status(500).send('Error al verificar si la película está en favoritos.');
         }
 
         if (!row) {
-            // Si la película no está en los favoritos, no hacer nada
-            return res.status(400).send('Error: la película no está en los favoritos.');
+            // If the movie is not in the user's favorites, return an error with a link to go back
+            return res.render('error', { 
+                message: 'Error: la película no está en favoritos.', 
+                link: '/userProfile' // You can customize this as needed
+            });
         }
 
-        // Si la película está en los favoritos, proceder a eliminarla
+        // If the movie is in favorites, proceed to remove it
         const sql = `DELETE FROM movie_user WHERE user_id = ? AND movie_id = ?`;
         db.run(sql, [user_id, movie_id], function (err) {
             if (err) {
-                console.error('Database Error (Delete):', err.message);
+                console.error('Database Error:', err.message);
                 return res.status(500).send('Error al eliminar de favoritos.');
             }
-
-            console.log(`Película con ID ${movie_id} eliminada de los favoritos del usuario ${user_id}`);
             res.redirect(`/userProfile`);
         });
     });
 });
+
 
 // Mostrar las películas favoritas de un usuario
 app.get('/user/:user_id', (req, res) => {
