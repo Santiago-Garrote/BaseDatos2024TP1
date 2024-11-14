@@ -4,6 +4,7 @@
     <title><%= movies.title %></title>
     <link rel="stylesheet" href="/styles.css">
     <style>
+        /* Estilos CSS existentes */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f0f0f0;
@@ -38,96 +39,39 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .movie-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 20px;
-        }
-
-        .movie-details h3 {
-            font-size: 1.1em;
-            color: #0078d4;
-        }
-
-        .movie-details p {
-            color: #666;
-        }
-
-        .overview {
-            grid-column: span 2;
-            font-size: 1.1em;
-            color: #333;
-        }
-
-        .button-container {
+        /* Estilos adicionales para comentarios */
+        .reviews {
             margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
         }
 
-        button {
-            background-color: #0078d4;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+        .reviews h3 {
+            color: #0078d4;
+            margin-bottom: 10px;
         }
 
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Estilo para los enlaces */
-        a {
-            color: black;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-            color: #333;
-        }
-
-        .back-to-home {
-            margin-top: 30px;
-            background-color: #f5f5f5;
-            padding: 10px 20px;
+        .review {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
             border-radius: 5px;
         }
 
-        .back-to-home a {
-            font-size: 1.2em;
+        .review p {
+            margin: 5px 0;
+        }
+
+        .rating {
+            font-weight: bold;
             color: #0078d4;
-        }
-
-        .back-to-home a:hover {
-            color: #0056b3;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        ul li {
-            margin: 8px 0;
-        }
-
-        .cast-list, .crew-list {
-            font-size: 1em;
-            color: #555;
         }
     </style>
 </head>
 <body>
-<div class="background">
+
 <h1><%= movies.title %></h1>
 
 <div class="container">
+    <!-- Detalles de la película (sección existente) -->
     <div class="movie-details">
         <div>
             <h3>Fecha de lanzamiento</h3>
@@ -175,6 +119,7 @@
         <p><%= movies.overview %></p>
     </div>
 
+    <!-- Sección de Directores, Elenco y Crew (sección existente) -->
     <h3>Directores:</h3>
     <ul>
         <% movies.directors.forEach((director) => { %>
@@ -204,7 +149,18 @@
         <a href="<%= movies.homepage %>"><%= movies.homepage %></a>
     <% } %>
 
+    <div class="reviews">
+        <h3>Reseñas:</h3>
+        <% movies.reviews.forEach((review) => { %>
+            <div class="review">
+                <p><strong>Usuario:</strong> <%= review.user_id %></p>
+                <p><strong>Comentario:</strong> <%= review.review %></p>
+            </div>
+        <% }); %>
+    </div>
+
     <div class="button-container">
+        <!-- Formulario para agregar/eliminar favoritos (sección existente) -->
         <form action="/addFavorite" method="POST">
             <input type="hidden" name="user_id" value="<%= user_id %>">
             <input type="hidden" name="movie_id" value="<%= movies.id %>">
@@ -225,6 +181,6 @@
 <div class="back-to-home">
     <a href="/index">Volver al Inicio</a>
 </div>
-</div>
+
 </body>
 </html>
