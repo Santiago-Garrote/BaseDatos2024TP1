@@ -54,6 +54,7 @@ app.get('/login', (req, res) => {
                 } else {
                     if (result.length > 0) {
                         res.cookie('user_id', result[0]["user_id"]);
+                        res.cookie('user_name', result[0]["user_name"]);
                         res.redirect('./index');
                     } else {
                         res.render('login', {emptyData: true, afterDeletion: false});
@@ -283,7 +284,7 @@ app.get('/pelicula/:id', (req, res) => {
     db.all(
         `
         SELECT
-        movie.*,
+        movie.*, user_id, user_name,
         g.genre_name AS genre,
         k.keyword_name AS keyword,
         l.language_name AS language,
@@ -303,7 +304,7 @@ app.get('/pelicula/:id', (req, res) => {
         JOIN language l ON l.language_id = ml.language_id
         JOIN movie_keywords mk ON movie.movie_id = mk.movie_id
         JOIN keyword k ON mk.keyword_id = k.keyword_id
-        LEFT JOIN movie_user ON movie.movie_id = movie_user.movie_id
+        LEFT JOIN (movie_user NATURAL JOIN User) ON movie.movie_id = movie_user.movie_id
         WHERE movie.movie_id = ? GROUP BY movie.movie_id, movie_user.user_id, movie_user.rating, movie_user.review;`,
         [movieId],
         (err, result) => {
@@ -361,6 +362,7 @@ app.get('/pelicula/:id', (req, res) => {
                             overview: rows[0].overview,
                             reviews: result.map((row) => ({
                                 user_id: row.user_id,
+                                user_name: row.user_name,
                                 review: row.reviews,
                                 rating: row.rating
                             })),
