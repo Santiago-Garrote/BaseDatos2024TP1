@@ -25,12 +25,12 @@ app.set('view engine', 'ejs');
 app.get('/login', (req, res) => {
         let user_name = req.query.uName;
         let user_password = req.query.uPassword;
-    if (afterDeletion) {
+    if (afterDeletion || firstAccess) { //evita que crashee la página
         user_name = undefined;
         user_password = undefined;
     }
 
-    if (firstAccess) {
+    if (firstAccess) { //evita mostrar el mensaje de campo vacío cuando se ingresa por primera vez
         firstAccess = false;
         res.render('login', {emptyData: false, afterDeletion: false});
     } else if (user_name === undefined || user_password === undefined) {
@@ -38,7 +38,7 @@ app.get('/login', (req, res) => {
     } else if (user_name === "-1" && user_password === "-1") {
         firstAccess = true;
         res.cookie('user_id', "-1");
-        res.redirect('./index');
+        res.render('index', {userLoggedIn: false});
     } else {
         const userQuery = 'SELECT * FROM User WHERE user_name = ? AND user_password = ?';
         db.all(
@@ -67,16 +67,14 @@ app.get('/signUp', (req, res) => {
     const userName = req.query.uName;
     const userPassword = req.query.uPassword;
     const userEmail = req.query.uEmail;
+    firstAccess = true;
 
     if (userName === '' || userPassword === '' || userEmail === '') {
-        res.render('signUp', {emptyData: true});
+        res.render('signUp', {error: true, errorMessage: 'Ingrese sus datos.'});
         return;
     }
 
     const signUpQuery = 'INSERT INTO User(user_name, user_password, user_email, user_super) VALUES (?,?,?, 0) RETURNING user_id'
-    if(!userName || !userPassword || !userEmail){
-        return res.render('signup', {error: "Completar todos los datos"});
-    }
     db.all(
         signUpQuery,
         [userName, userPassword, userEmail],
@@ -84,18 +82,18 @@ app.get('/signUp', (req, res) => {
             if (userName !== undefined  && userPassword !== undefined) {
                 if (err) {
                     if(err.code === 'SQLITE_CONSTRAINT' && err.message.includes('User.user_email') || err.code === 'SQLITE_CONSTRAINT' && err.message.includes('User.user_name') ){
-                        res.render('signUp', { error: "Email o Usuario ya utilizado"});
+                        res.render('signUp', {error: true, errorMessage: "Email o usuario ya registrado"});
                     }
                     else{
                         console.log(err);
-                        res.render('signup', { error: "Algo fallo en el registro"});
+                        res.render('signup', {error: true, errorMessage: "Algo falló en el registro"});
                     }
                 } else{
                     res.cookie('user_id', result[0]["user_id"]);
                     res.render('signUpExitoso', {user_name: userName, user_password: userPassword});
                 }
             } else {
-                res.render('signUp', {emptyData: false});
+                res.render('signUp', {error: false, errorMessage: ''});
             }
         }
     )
@@ -104,30 +102,53 @@ app.get('/signUp', (req, res) => {
 // Ruta para buscador
 app.get('/index', (req, res) => {
     const userId = req.cookies['user_id'];
-    const userLoggedIn = userId !== "-1"
+    const userLoggedIn = userId !== "-1";
+    firstAccess = true;
     res.render('index', {userLoggedIn: userLoggedIn});
 })
 
 // Ruta para cuenta
 app.get('/userProfile', (req, res) => {
     const userId = req.cookies['user_id'];
-    const userLoggedIn = userId !== "-1"
-    firstAccess = true;
+    const userLoggedIn = userId !== "-1";
 
     const userDataQuery = 'SELECT * FROM User WHERE user_id = ?';
+    const favoritesQuery = 'SELECT movie.title, movie_user.rating, movie_user.review ' +
+        'FROM movie_user ' +
+        'JOIN movie ON movie_user.movie_id = movie.movie_id ' +
+        'WHERE movie_user.user_id = ?';
+
     if (userId !== "-1") {
         db.all(userDataQuery, [userId], (err, result) => {
             if (err) {
                 console.log(err);
-                res.status(500).send('Error en la búsqueda.');
+                res.status(500).send('Error en la búsqueda de datos del usuario.');
             } else {
-                res.render('user/userProfile', {user_name: result[0]['user_name'], user_email: result[0]['user_email'], user_loggedIn: userLoggedIn});
+                // Obtener las películas favoritas del usuario (sin filtro 'favorite')
+                db.all(favoritesQuery, [userId], (err, favorites) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).send('Error en la búsqueda de películas favoritas.');
+                    } else {
+                        // Pasar la información del usuario y sus películas favoritas a la vista
+                        res.render('user/userProfile', {
+                            user_name: result[0]['user_name'],
+                            user_email: result[0]['user_email'],
+                            user_loggedIn: userLoggedIn,
+                            favorites: favorites
+                        });
+                    }
+                });
             }
-        })
+        });
     } else {
-        res.render('user/userProfile', {user_name: 'Anonymous', user_email: 'Anonymous', user_loggedIn: userLoggedIn});
+        res.render('user/userProfile', {
+            user_name: 'Anonymous',
+            user_email: 'Anonymous',
+            user_loggedIn: userLoggedIn
+        });
     }
-})
+});
 
 // Ruta para modificar un usuario
 app.get('/modifyUser', (req, res) => {
@@ -144,7 +165,7 @@ app.get('/modifyUser', (req, res) => {
                 console.log(err);
                 res.status(500).send('Error en la modificación.');
             } else{
-                res.redirect(`login?emptyData=false&afterDeletion=false`);
+                res.redirect('login?emptyData=false&afterDeletion=false}');
             }
         })
     } else {
@@ -176,7 +197,7 @@ app.get('/deleteUser', (req, res) => {
                     res.status(500).send('Error en la búsqueda.');
                 } else{
                     firstAccess = true;
-                    res.redirect('/login');
+                    res.redirect('login');
                 }
             }
         )
@@ -458,8 +479,9 @@ app.get('/persona/:id', (req, res) => {
 // Pagina Keywords
 app.get('/keyword', (req, res) => {
     const userId = req.cookies['user_id'];
-    const userLoggedIn = userId !== "-1"
-    res.render('keywords/keywordsSearcher', {userLoggedIn: userLoggedIn});
+    const userLoggedIn = userId !== "-1";
+    firstAccess = true;
+    res.render('keywords/keywordSearcher', {userLoggedIn: userLoggedIn});
 })
 
 // Búsqueda de Keywords

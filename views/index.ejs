@@ -49,16 +49,17 @@
     </style>
 </head>
 <body>
+<h1>MovieWeb</h1>
 <% if (userLoggedIn) { %>
     <div id="user"><a href="/userProfile">Mi perfil</a></div>
 <% } else { %>
     <div id="user"><a href="/login">Login</a></div>
 <% } %>
-<h1>MovieWeb</h1>
+<br><br>
 <form action="/buscar" method="GET">
     <input type="text" name="q" placeholder="Buscar películas..." />
     <button type="submit">Buscar</button> <br><br>
-    <a href="http://localhost:3000/keyword" title="Realizar una búsqueda de películas a través de una keyword">Buscar por Keywords</a>
+    <a href="http://localhost:3000/keyword" title="Realizar una búsqueda de películas a través de una keyword">Buscar por palabras claves</a>
 </form>
 </body>
 </html>
