@@ -33,7 +33,7 @@
             margin-right: 10px;
         }
 
-        button[type="submit"] {
+        button[type="submit"], button#MovieButton {
             background-color: #0078d4;
             color: white;
             border: none;
@@ -41,9 +41,10 @@
             padding: 10px 20px;
             font-size: 18px;
             cursor: pointer;
+            margin-top: 10px; /* Añado margen superior para separar los botones */
         }
 
-        button[type="submit"]:hover {
+        button[type="submit"]:hover, button#MovieButton:hover {
             background-color: #0056b3;
         }
     </style>
@@ -53,7 +54,8 @@
 <form action="/buscar-keyword" method="GET">
     <input type="text" name="q" placeholder="Buscar por keywords..." />
     <button type="submit">Buscar</button><br>
-    <a href="http://localhost:3000/index" title="Realizar una busqueda de peliculas a traves de un director, actor o nombre">Buscar por nombre</a>
+    <!-- Botón que redirige a la página de búsqueda por película, con estilo similar al de Buscar -->
+    <button type="button" id="MovieButton" onclick="window.location.href='http://localhost:3000/index'">Buscar por Película</button>
 </form>
 </body>
 </html>
