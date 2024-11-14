@@ -203,14 +203,19 @@ app.get('/deleteUser', (req, res) => {
         const userDeleteQuery = 'DELETE FROM User WHERE user_id = ?';
         db.all(
             userDeleteQuery,
-            [req.cookies['user_id']],
+            [userId],
             (err, result) => {
                 if (err) {
                     console.log(err);
                     res.status(500).send('Error en la búsqueda.');
                 } else{
                     firstAccess = true;
-                    res.redirect('/login');
+                    if (req.cookies['user_id'] !== "0") {
+                        res.redirect('/login');
+                    } else {
+                        res.redirect('/userProfile')
+                    }
+
                 }
             }
         )

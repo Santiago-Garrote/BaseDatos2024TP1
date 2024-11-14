@@ -114,8 +114,8 @@
     </div>
 <% } %>
 
-<h2>Películas favoritas de <%= user_name %></h2>
 <div class="container">
+    <h2>Películas favoritas de <%= user_name %></h2>
     <ul class="favorites-list">
         <% if (favorites && favorites.length > 0) { %>
             <% favorites.forEach(favorite => { %>
@@ -136,6 +136,7 @@
             <% users.forEach(user => { %>
                 <li>
                     <p><%= user.user_name %> | <%= user.user_email %></p>
+                    <button onclick="window.location.href= `http://localhost:3000/deleteUser?userId=<%= user.user_id %>`">Eliminar</button>
                 </li>
             <% }) %>
         </ul>
