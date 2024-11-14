@@ -121,7 +121,7 @@ app.get('/userProfile', (req, res) => {
         'JOIN movie ON movie_user.movie_id = movie.movie_id ' +
         'WHERE movie_user.user_id = ?';
 
-    if (userId !== "-1") {
+    if (userLoggedIn) {
         db.all(userDataQuery, [userId], (err, result) => {
             if (err) {
                 console.log(err);
@@ -133,14 +133,14 @@ app.get('/userProfile', (req, res) => {
                         console.log(err);
                         res.status(500).send('Error en la búsqueda de películas favoritas.');
                     } else {
-                        db.all('SELECT * FROM User', [], (err, result) => {
+                        db.all('SELECT * FROM User', [], (err, users) => {
                             if (err) {
                                 console.log(err);
                                 res.status(500).send('Error en la búsqueda de usuarios.');
                             } else {
                                 // Pasar la información del usuario y sus películas favoritas a la vista
                                 res.render('user/userProfile', {
-                                    users: result,
+                                    users: users,
                                     user_name: result[0]['user_name'],
                                     user_super: result[0]['user_super'],
                                     user_email: result[0]['user_email'],
@@ -500,7 +500,7 @@ app.get('/persona/:id', (req, res) => {
 
 // Pagina Keywords
 app.get('/keyword', (req, res) => {
-    res.render('keywords/keywordSearcher');
+    res.render('keywords/keywordSearcher', {userLoggedIn: req.cookies['user_id'] >=0});
 })
 
 // Búsqueda de Keywords
