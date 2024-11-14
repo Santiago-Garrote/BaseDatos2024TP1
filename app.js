@@ -113,7 +113,7 @@ app.get('/index', (req, res) => {
 // Ruta para cuenta
 app.get('/userProfile', (req, res) => {
     const userId = req.cookies['user_id'];
-    const userLoggedIn = userId !== "-1";
+    const userLoggedIn = userId !== "-1"
 
     const userDataQuery = 'SELECT * FROM User WHERE user_id = ?';
     const favoritesQuery = 'SELECT movie.title, movie_user.rating, movie_user.review ' +
