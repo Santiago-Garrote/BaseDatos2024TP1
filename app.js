@@ -7,9 +7,6 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-let firstAccess = true;
-let afterDeletion = false;
-
 app.use(express.urlencoded({ extended: true })); // Necesario para procesar datos de formularios
 app.use(express.json()); // Para procesar JSON, si es necesario
 
@@ -26,22 +23,14 @@ app.set('view engine', 'ejs');
 
 // Ruta para el inicio de sesión
 app.get('/login', (req, res) => {
-        let user_name = req.query.uName;
-        let user_password = req.query.uPassword;
-    if (afterDeletion || firstAccess) { //evita que crashee la página
-        user_name = undefined;
-        user_password = undefined;
-    }
+    const user_name = req.query.uName;
+    const user_password = req.query.uPassword;
 
-    if (firstAccess) { //evita mostrar el mensaje de campo vacío cuando se ingresa por primera vez
-        firstAccess = false;
-        res.render('login', {emptyData: false, afterDeletion: false});
-    } else if (user_name === undefined || user_password === undefined) {
-        res.render('login', {emptyData: true, afterDeletion: false});
+    if (user_name === undefined  || user_password === undefined) {
+        res.render('login');
     } else if (user_name === "-1" && user_password === "-1") {
-        firstAccess = true;
         res.cookie('user_id', "-1");
-        res.render('index', {userLoggedIn: false});
+        res.redirect('./index');
     } else {
         const userQuery = 'SELECT * FROM User WHERE user_name = ? AND user_password = ?';
         db.all(
@@ -56,7 +45,7 @@ app.get('/login', (req, res) => {
                         res.cookie('user_id', result[0]["user_id"]);
                         res.redirect('./index');
                     } else {
-                        res.render('login', {emptyData: true, afterDeletion: false});
+                        res.render('login');
                     }
                 }
             }
@@ -70,14 +59,11 @@ app.get('/signUp', (req, res) => {
     const userName = req.query.uName;
     const userPassword = req.query.uPassword;
     const userEmail = req.query.uEmail;
-    firstAccess = true;
-
-    if (userName === '' || userPassword === '' || userEmail === '') {
-        res.render('signUp', {error: true, errorMessage: 'Ingrese sus datos.'});
-        return;
-    }
 
     const signUpQuery = 'INSERT INTO User(user_name, user_password, user_email, user_super) VALUES (?,?,?, 0) RETURNING user_id'
+    if(!userName || !userPassword || !userEmail){
+        return res.render('signup', {error: "Completar todos los datos"});
+    }
     db.all(
         signUpQuery,
         [userName, userPassword, userEmail],
@@ -85,18 +71,18 @@ app.get('/signUp', (req, res) => {
             if (userName !== undefined  && userPassword !== undefined) {
                 if (err) {
                     if(err.code === 'SQLITE_CONSTRAINT' && err.message.includes('User.user_email') || err.code === 'SQLITE_CONSTRAINT' && err.message.includes('User.user_name') ){
-                        res.render('signUp', {error: true, errorMessage: "Email o usuario ya registrado"});
+                        res.render('signUp', { error: "Email o Usuario ya utilizado"});
                     }
                     else{
                         console.log(err);
-                        res.render('signup', {error: true, errorMessage: "Algo falló en el registro"});
+                        res.render('signup', { error: "Algo fallo en el registro"});
                     }
                 } else{
                     res.cookie('user_id', result[0]["user_id"]);
                     res.render('signUpExitoso', {user_name: userName, user_password: userPassword});
                 }
             } else {
-                res.render('signUp', {error: false, errorMessage: ''});
+                res.render('signUp');
             }
         }
     )
@@ -104,16 +90,13 @@ app.get('/signUp', (req, res) => {
 
 // Ruta para buscador
 app.get('/index', (req, res) => {
-    const userId = req.cookies['user_id'];
-    const userLoggedIn = userId !== "-1";
-    firstAccess = true;
-    res.render('index', {userLoggedIn: userLoggedIn});
+    res.render('index');
 })
 
 // Ruta para cuenta
 app.get('/userProfile', (req, res) => {
     const userId = req.cookies['user_id'];
-    const userLoggedIn = userId !== "-1"
+    const userLoggedIn = userId !== "-1";
 
     const userDataQuery = 'SELECT * FROM User WHERE user_id = ?';
     const favoritesQuery = 'SELECT movie.title, movie_user.rating, movie_user.review ' +
@@ -168,7 +151,7 @@ app.get('/modifyUser', (req, res) => {
                 console.log(err);
                 res.status(500).send('Error en la modificación.');
             } else{
-                res.redirect('/login?emptyData=false&afterDeletion=false}');
+                res.redirect(`/login`);
             }
         })
     } else {
@@ -199,8 +182,7 @@ app.get('/deleteUser', (req, res) => {
                     console.log(err);
                     res.status(500).send('Error en la búsqueda.');
                 } else{
-                    firstAccess = true;
-                    res.redirect('/login');
+                    res.redirect('/login')
                 }
             }
         )
@@ -263,34 +245,39 @@ app.get('/pelicula/:id', (req, res) => {
     const movieId = req.params.id;
     const userId = req.cookies['user_id'];
 
-    //Tomar información sobre movies excluyendo elenco, crew y director
+    //Tomar informacion sobre movies exlcuyendo elenco, crew y director
     db.all(
-        `SELECT movie.*,
+        `SELECT
+        movie.*,
         g.genre_name AS genre,
         k.keyword_name AS keyword,
         l.language_name AS language,
         pc.company_name AS company,
-        c.country_name AS country
-        FROM movie
-        JOIN movie_genres mg on movie.movie_id = mg.movie_id
-        JOIN genre g on mg.genre_id = g.genre_id
-        JOIN movie_company mc on movie.movie_id = mc.movie_id
-        JOIN production_company pc on mc.company_id = pc.company_id
-        JOIN production_country p on movie.movie_id = p.movie_id
-        JOIN main.country c on p.country_id = c.country_id
-        JOIN movie_languages ml on movie.movie_id = ml.movie_id
-        JOIN language l on l.language_id = ml.language_id
-        JOIN movie_keywords mk on movie.movie_id = mk.movie_id
-        JOIN keyword k on mk.keyword_id = k.keyword_id
-        WHERE p.movie_id = ?
-        GROUP BY movie.movie_id;`,
+        c.country_name AS country,
+        movie_user.user_id AS user_id,
+        movie_user.rating AS rating,
+        movie_user.review AS reviews
+    FROM movie
+    JOIN movie_genres mg ON movie.movie_id = mg.movie_id
+    JOIN genre g ON mg.genre_id = g.genre_id
+    JOIN movie_company mc ON movie.movie_id = mc.movie_id
+    JOIN production_company pc ON mc.company_id = pc.company_id
+    JOIN production_country p ON movie.movie_id = p.movie_id
+    JOIN main.country c ON p.country_id = c.country_id
+    JOIN movie_languages ml ON movie.movie_id = ml.movie_id
+    JOIN language l ON l.language_id = ml.language_id
+    JOIN movie_keywords mk ON movie.movie_id = mk.movie_id
+    JOIN keyword k ON mk.keyword_id = k.keyword_id
+    LEFT JOIN movie_user ON movie.movie_id = movie_user.movie_id
+    WHERE movie.movie_id = ? GROUP BY movie.movie_id, movie_user.user_id, movie_user.rating, movie_user.review;
+    `,
         [movieId],
         (err, result) => {
             if (err) {
                 console.log(err);
-                res.status(500).send('Error en la búsqueda');
+                res.status(500).send('Error en la busqueda');
             }
-            //Toma específicamente al elenco, crew, directores y escritores
+            //Toma especificamente al elenco, crew, directores y escritores
             db.all(
                 `SELECT
             movie.*,
@@ -317,7 +304,7 @@ app.get('/pelicula/:id', (req, res) => {
                     } else if (rows.length === 0) {
                         res.status(404).send('Película no encontrada.');
                     } else {
-                        // Organizar los datos en un objeto de película con toda la información de movie
+                        // Organizar los datos en un objeto de película con toda la informacion de movie
                         const movieData = {
                             genre: result[0].genre,
                             keyword: result[0].keyword,
@@ -337,11 +324,15 @@ app.get('/pelicula/:id', (req, res) => {
                             runtime: rows[0].runtime,
                             release_date: rows[0].release_date,
                             overview: rows[0].overview,
+                            reviews: result.map((row) => ({
+                                user_id: row.user_id,
+                                review: row.reviews,
+                                rating: row.rating
+                            })),
                             directors: [],
                             writers: [],
                             cast: [],
                             crew: [],
-
                         };
 
                         // Crear un objeto para almacenar directores
@@ -439,7 +430,6 @@ app.get('/pelicula/:id', (req, res) => {
             );
         });
 });
-
 // Ruta para mostrar la página de una persona específica
 app.get('/persona/:id', (req, res) => {
     const personId = req.params.id;
@@ -482,10 +472,7 @@ app.get('/persona/:id', (req, res) => {
 
 // Pagina Keywords
 app.get('/keyword', (req, res) => {
-    const userId = req.cookies['user_id'];
-    const userLoggedIn = userId !== "-1";
-    firstAccess = true;
-    res.render('keywords/keywordSearcher', {userLoggedIn: userLoggedIn});
+    res.render('keywords/keywordSearcher');
 })
 
 // Búsqueda de Keywords
