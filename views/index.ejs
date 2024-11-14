@@ -33,7 +33,7 @@
             margin-right: 10px;
         }
 
-        button[type="submit"], button#keywordButton {
+        button[type="submit"], button#MovieButton {
             background-color: #0078d4;
             color: white;
             border: none;
@@ -41,9 +41,10 @@
             padding: 10px 20px;
             font-size: 18px;
             cursor: pointer;
+            margin-top: 10px; /* Añado margen superior para separar los botones */
         }
 
-        button[type="submit"]:hover, button#keywordButton:hover {
+        button[type="submit"]:hover, button#MovieButton:hover {
             background-color: #0056b3;
         }
     </style>
@@ -59,7 +60,7 @@
 <form action="/buscar" method="GET">
     <input type="text" name="q" placeholder="Buscar películas..." />
     <button type="submit">Buscar</button> <br>
-    <button type="button" id="keywordButton" onclick="window.location.href='http://localhost:3000/keyword'">Buscar por Keywords</button>
+    <button type="button" id="MovieButton" onclick="window.location.href='http://localhost:3000/keyword'">Buscar por Keywords</button>
 </form>
 </body>
 </html>
