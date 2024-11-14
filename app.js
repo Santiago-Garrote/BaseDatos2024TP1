@@ -7,6 +7,9 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(express.urlencoded({ extended: true })); // Necesario para procesar datos de formularios
+app.use(express.json()); // Para procesar JSON, si es necesario
+
 // Serve static files from the "views" directory
 app.use(express.static('views'));
 app.use(cookieParser());
@@ -381,7 +384,7 @@ app.get('/pelicula/:id', (req, res) => {
                         });
 
                         res.render('pelicula', {movies: movieData});
-                    }
+                    };
                 }
             );
         });
