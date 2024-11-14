@@ -275,7 +275,8 @@ app.get('/pelicula/:id', (req, res) => {
 
     //Tomar informacion sobre movies exlcuyendo elenco, crew y director
     db.all(
-        `SELECT
+        `
+        SELECT
         movie.*,
         g.genre_name AS genre,
         k.keyword_name AS keyword,
@@ -285,19 +286,19 @@ app.get('/pelicula/:id', (req, res) => {
         movie_user.user_id AS user_id,
         movie_user.rating AS rating,
         movie_user.review AS reviews
-    FROM movie
-    JOIN movie_genres mg ON movie.movie_id = mg.movie_id
-    JOIN genre g ON mg.genre_id = g.genre_id
-    JOIN movie_company mc ON movie.movie_id = mc.movie_id
-    JOIN production_company pc ON mc.company_id = pc.company_id
-    JOIN production_country p ON movie.movie_id = p.movie_id
-    JOIN main.country c ON p.country_id = c.country_id
-    JOIN movie_languages ml ON movie.movie_id = ml.movie_id
-    JOIN language l ON l.language_id = ml.language_id
-    JOIN movie_keywords mk ON movie.movie_id = mk.movie_id
-    JOIN keyword k ON mk.keyword_id = k.keyword_id
-    LEFT JOIN movie_user ON movie.movie_id = movie_user.movie_id
-    WHERE movie.movie_id = ? GROUP BY movie.movie_id, movie_user.user_id, movie_user.rating, movie_user.review;`,
+        FROM movie
+        JOIN movie_genres mg ON movie.movie_id = mg.movie_id
+        JOIN genre g ON mg.genre_id = g.genre_id
+        JOIN movie_company mc ON movie.movie_id = mc.movie_id
+        JOIN production_company pc ON mc.company_id = pc.company_id
+        JOIN production_country p ON movie.movie_id = p.movie_id
+        JOIN main.country c ON p.country_id = c.country_id
+        JOIN movie_languages ml ON movie.movie_id = ml.movie_id
+        JOIN language l ON l.language_id = ml.language_id
+        JOIN movie_keywords mk ON movie.movie_id = mk.movie_id
+        JOIN keyword k ON mk.keyword_id = k.keyword_id
+        LEFT JOIN movie_user ON movie.movie_id = movie_user.movie_id
+        WHERE movie.movie_id = ? GROUP BY movie.movie_id, movie_user.user_id, movie_user.rating, movie_user.review;`,
         [movieId],
         (err, result) => {
             if (err) {
@@ -306,7 +307,8 @@ app.get('/pelicula/:id', (req, res) => {
             }
             //Toma especificamente al elenco, crew, directores y escritores
             db.all(
-                `SELECT
+                `
+            SELECT
             movie.*,
                 actor.person_name as actor_name,
                 actor.person_id as actor_id,
