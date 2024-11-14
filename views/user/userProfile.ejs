@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="es">
 <head>
     <title>Usuario <%= user_name %></title>
     <link rel="stylesheet" href="../styles.css">
@@ -38,28 +38,6 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .movie-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 20px;
-        }
-
-        .movie-details h3 {
-            font-size: 1.1em;
-            color: #0078d4;
-        }
-
-        .movie-details p {
-            color: #666;
-        }
-
-        .overview {
-            grid-column: span 2;
-            font-size: 1.1em;
-            color: #333;
-        }
-
         .button-container {
             margin-top: 20px;
             display: flex;
@@ -80,7 +58,6 @@
             background-color: #0056b3;
         }
 
-        /* Estilo para los enlaces */
         a {
             color: black;
             font-weight: bold;
@@ -117,45 +94,57 @@
             margin: 8px 0;
         }
 
-        .cast-list, .crew-list {
-            font-size: 1em;
+        .favorites-list, .users-list {
+            font-size: 1.1em;
             color: #555;
         }
     </style>
 </head>
 <body>
+
 <h1>Usuario: <%= user_name %></h1>
 <h3>Email: <%= user_email %></h3>
-<% if (user_loggedIn) {%>
-    <button onclick="window.location.href= 'http://localhost:3000/deleteUser'">Eliminar cuenta</button>
-    <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar información</button>
-    <button onclick="window.location.href= 'http://localhost:3000/login'">Salir de la cuenta</button>
-<%}%>
+
+<% if (user_loggedIn) { %>
+    <div class="button-container">
+        <button onclick="window.location.href= 'http://localhost:3000/deleteUser'">Eliminar cuenta</button>
+        <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar información</button>
+        <button onclick="window.location.href= 'http://localhost:3000/login'">Salir de la cuenta</button>
+    </div>
+<% } %>
+
 <h2>Películas favoritas de <%= user_name %></h2>
-<ul>
-    <% if (favorites && favorites.length > 0) { %>
-        <% favorites.forEach(favorite => { %>
-            <li>
-                <strong><%= favorite.title %></strong>
-                <p>Puntuación: <%= favorite.rating || 'Sin puntuación' %></p>
-                <p>Opinión: <%= favorite.review || 'Sin opinión' %></p>
-            </li>
-        <% }) %>
-    <% } else { %>
-        <p>No tienes películas favoritas.</p>
-    <% } %>
-    <% if (user_super > 0) {%>
+<div class="container">
+    <ul class="favorites-list">
+        <% if (favorites && favorites.length > 0) { %>
+            <% favorites.forEach(favorite => { %>
+                <li>
+                    <strong><%= favorite.title %></strong>
+                    <p>Puntuación: <%= favorite.rating || 'Sin puntuación' %></p>
+                    <p>Opinión: <%= favorite.review || 'Sin opinión' %></p>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>No tienes películas favoritas.</p>
+        <% } %>
+    </ul>
+
+    <% if (user_super > 0) { %>
         <h3>Usuarios</h3>
-        <ul>
-            <%users.forEach(user => {%>
-            <li>
-                <p><%= user.user_name %></p>
-            </li>
-            <%})%>
+        <ul class="users-list">
+            <% users.forEach(user => { %>
+                <li>
+                    <p><%= user.user_name %></p>
+                </li>
+            <% }) %>
         </ul>
-    <%}%>
-</ul>
-<div id="inicio"><a href="/index">Inicio</a></div>
+    <% } %>
+</div>
+
+<!-- Botón de inicio en la parte inferior -->
+<div class="back-to-home">
+    <a href="/index">Volver al Inicio</a>
+</div>
 
 </body>
 </html>
