@@ -383,8 +383,8 @@ app.get('/pelicula/:id', (req, res) => {
                             }
                         });
 
-                        res.render('pelicula', {movies: movieData});
-                    };
+                        res.render('pelicula', {movies: movieData, user_id: req.cookies['user_id']});
+                    }
                 }
             );
         });
