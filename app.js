@@ -26,8 +26,8 @@ app.set('view engine', 'ejs');
 
 // Ruta para el inicio de sesión
 app.get('/login', (req, res) => {
-        let user_name = req.query.uName;
-        let user_password = req.query.uPassword;
+    let user_name = req.query.uName;
+    let user_password = req.query.uPassword;
     if (afterDeletion || firstAccess) { //evita que crashee la página
         user_name = undefined;
         user_password = undefined;
@@ -113,7 +113,7 @@ app.get('/index', (req, res) => {
 // Ruta para cuenta
 app.get('/userProfile', (req, res) => {
     const userId = req.cookies['user_id'];
-    const userLoggedIn = userId !== "-1"
+    const userLoggedIn = userId !== "-1";
 
     const userDataQuery = 'SELECT * FROM User WHERE user_id = ?';
     const favoritesQuery = 'SELECT movie.title, movie_user.rating, movie_user.review ' +
@@ -274,25 +274,29 @@ app.get('/pelicula/:id', (req, res) => {
 
     //Tomar informacion sobre movies exlcuyendo elenco, crew y director
     db.all(
-        `SELECT movie.*,
+        `SELECT
+        movie.*,
         g.genre_name AS genre,
         k.keyword_name AS keyword,
         l.language_name AS language,
         pc.company_name AS company,
-        c.country_name AS country
-        FROM movie
-        JOIN movie_genres mg on movie.movie_id = mg.movie_id
-        JOIN genre g on mg.genre_id = g.genre_id
-        JOIN movie_company mc on movie.movie_id = mc.movie_id
-        JOIN production_company pc on mc.company_id = pc.company_id
-        JOIN production_country p on movie.movie_id = p.movie_id
-        JOIN main.country c on p.country_id = c.country_id
-        JOIN movie_languages ml on movie.movie_id = ml.movie_id
-        JOIN language l on l.language_id = ml.language_id
-        JOIN movie_keywords mk on movie.movie_id = mk.movie_id
-        JOIN keyword k on mk.keyword_id = k.keyword_id
-        WHERE p.movie_id = ?
-        GROUP BY movie.movie_id;`,
+        c.country_name AS country,
+        movie_user.user_id AS user_id,
+        movie_user.rating AS rating,
+        movie_user.review AS reviews
+    FROM movie
+    JOIN movie_genres mg ON movie.movie_id = mg.movie_id
+    JOIN genre g ON mg.genre_id = g.genre_id
+    JOIN movie_company mc ON movie.movie_id = mc.movie_id
+    JOIN production_company pc ON mc.company_id = pc.company_id
+    JOIN production_country p ON movie.movie_id = p.movie_id
+    JOIN main.country c ON p.country_id = c.country_id
+    JOIN movie_languages ml ON movie.movie_id = ml.movie_id
+    JOIN language l ON l.language_id = ml.language_id
+    JOIN movie_keywords mk ON movie.movie_id = mk.movie_id
+    JOIN keyword k ON mk.keyword_id = k.keyword_id
+    LEFT JOIN movie_user ON movie.movie_id = movie_user.movie_id
+    WHERE movie.movie_id = ? GROUP BY movie.movie_id, movie_user.user_id, movie_user.rating, movie_user.review;`,
         [movieId],
         (err, result) => {
             if (err) {
@@ -346,6 +350,11 @@ app.get('/pelicula/:id', (req, res) => {
                             runtime: rows[0].runtime,
                             release_date: rows[0].release_date,
                             overview: rows[0].overview,
+                            reviews: result.map((row) => ({
+                                user_id: row.user_id,
+                                review: row.reviews,
+                                rating: row.rating
+                            })),
                             directors: [],
                             writers: [],
                             cast: [],

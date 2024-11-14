@@ -124,7 +124,7 @@
     </style>
 </head>
 <body>
-<div class="background">
+
 <h1><%= movies.title %></h1>
 
 <div class="container">
@@ -203,6 +203,15 @@
         <h3>Página oficial:</h3>
         <a href="<%= movies.homepage %>"><%= movies.homepage %></a>
     <% } %>
+    div class="reviews">
+    <h3>Reseñas:</h3>
+    <% movies.reviews.forEach((review) => { %>
+        <div class="review">
+            <p><strong>Usuario:</strong> <%= review.user_id %></p>
+            <p><strong>Comentario:</strong> <%= review.review %></p>
+        </div>
+    <% }); %>
+</div>
 
     <div class="button-container">
         <form action="/addFavorite" method="POST">
@@ -225,6 +234,6 @@
 <div class="back-to-home">
     <a href="/index">Volver al Inicio</a>
 </div>
-</div>
+
 </body>
 </html>
