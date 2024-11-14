@@ -209,6 +209,10 @@
             <input type="hidden" name="user_id" value="<%= user_id %>">
             <input type="hidden" name="movie_id" value="<%= movies.id %>">
             <button type="submit">Agregar a Favoritos</button>
+            <label for="rating">Puntuación:</label>
+            <input type="number" name="rating" min="1" max="5">
+            <label for="review">Opinión:</label>
+            <textarea name="review"></textarea>
         </form>
         <form action="/removeFavorite" method="POST">
             <input type="hidden" name="user_id" value="<%= user_id %>">
