@@ -127,20 +127,28 @@ app.get('/userProfile', (req, res) => {
                 console.log(err);
                 res.status(500).send('Error en la búsqueda de datos del usuario.');
             } else {
-                res.render('user/userProfile', {user_name: result[0]['user_name'], user_super: result[0]['user_super'], user_email: result[0]['user_email'], user_loggedIn: userLoggedIn});
                 // Obtener las películas favoritas del usuario (sin filtro 'favorite')
                 db.all(favoritesQuery, [userId], (err, favorites) => {
                     if (err) {
                         console.log(err);
                         res.status(500).send('Error en la búsqueda de películas favoritas.');
                     } else {
-                        // Pasar la información del usuario y sus películas favoritas a la vista
-                        res.render('user/userProfile', {
-                            user_name: result[0]['user_name'],
-                            user_email: result[0]['user_email'],
-                            user_loggedIn: userLoggedIn,
-                            favorites: favorites
-                        });
+                        db.all('SELECT * FROM User', [], (err, result) => {
+                            if (err) {
+                                console.log(err);
+                                res.status(500).send('Error en la búsqueda de usuarios.');
+                            } else {
+                                // Pasar la información del usuario y sus películas favoritas a la vista
+                                res.render('user/userProfile', {
+                                    users: result,
+                                    user_name: result[0]['user_name'],
+                                    user_super: result[0]['user_super'],
+                                    user_email: result[0]['user_email'],
+                                    user_loggedIn: userLoggedIn,
+                                    favorites: favorites
+                                });
+                            }
+                        })
                     }
                 });
             }
@@ -149,6 +157,7 @@ app.get('/userProfile', (req, res) => {
         res.render('user/userProfile', {
             user_name: 'Anonymous',
             user_email: 'Anonymous',
+            user_super: '0',
             user_loggedIn: userLoggedIn
         });
     }

@@ -12,7 +12,6 @@
     <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar información</button>
     <button onclick="window.location.href= 'http://localhost:3000/login'">Salir de la cuenta</button>
 <%}%>
-<div id="inicio"><a href="/index">Inicio</a></div>
 <h2>Películas favoritas de <%= user_name %></h2>
 <ul>
     <% if (favorites && favorites.length > 0) { %>
@@ -26,15 +25,18 @@
     <% } else { %>
         <p>No tienes películas favoritas.</p>
     <% } %>
-    <% if (user_super > 1) {%>
+    <% if (user_super > 0) {%>
+        <h3>Usuarios</h3>
         <ul>
             <%users.forEach(user => {%>
             <li>
-                <p><%= user_name %>></p>
+                <p><%= user.user_name %></p>
             </li>
             <%})%>
         </ul>
     <%}%>
 </ul>
+<div id="inicio"><a href="/index">Inicio</a></div>
+
 </body>
 </html>
