@@ -216,7 +216,7 @@
     <h3>Reseñas:</h3>
     <% movies.reviews.forEach((review) => { %>
         <div class="review">
-            <p><strong>Usuario:</strong> <%= review.user_id %></p>
+            <p><strong>Usuario:</strong> <%= review.user_name %></p>
             <p><strong>Comentario:</strong> <%= review.review %></p>
         </div>
     <% }); %>
