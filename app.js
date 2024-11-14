@@ -141,6 +141,7 @@ app.get('/userProfile', (req, res) => {
                                 // Pasar la información del usuario y sus películas favoritas a la vista
                                 res.render('user/userProfile', {
                                     users: users,
+                                    user_id: req.cookies['user_id'],
                                     user_name: result[0]['user_name'],
                                     user_super: result[0]['user_super'],
                                     user_email: result[0]['user_email'],
@@ -645,6 +646,7 @@ app.get('/user/:user_id', (req, res) => {
 
             // Renderizar la vista con los datos del usuario y las películas favoritas
             res.render('user/userProfile', {
+                user_id: user_id,
                 user_name: user.user_name,
                 user_email: user.user_email,
                 favorites: favorites || []

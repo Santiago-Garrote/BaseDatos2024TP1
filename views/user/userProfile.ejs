@@ -108,14 +108,16 @@
 
 <% if (user_loggedIn) { %>
     <div class="button-container">
-        <button onclick="window.location.href= 'http://localhost:3000/deleteUser'">Eliminar cuenta</button>
-        <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar información</button>
+        <% if (user_id != 0) {%>
+            <button onclick="window.location.href= 'http://localhost:3000/deleteUser'">Eliminar cuenta</button>
+            <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar información</button>
+        <%}%>
         <button onclick="window.location.href= 'http://localhost:3000/login'">Salir de la cuenta</button>
     </div>
 <% } %>
 
 <div class="container">
-    <h2>Películas favoritas de <%= user_name %></h2>
+    <h2>Películas reseñadas por <%= user_name %></h2>
     <ul class="favorites-list">
         <% if (favorites && favorites.length > 0) { %>
             <% favorites.forEach(favorite => { %>
@@ -126,7 +128,7 @@
                 </li>
             <% }) %>
         <% } else { %>
-            <p>No tienes películas favoritas.</p>
+            <p>No tienes películas reseñadas.</p>
         <% } %>
     </ul>
 
