@@ -25,6 +25,15 @@
     <% } else { %>
         <p>No tienes películas favoritas.</p>
     <% } %>
+    <% if (user_super > 1) {%>
+        <ul>
+            <%users.forEach(user => {%>
+            <li>
+                <p><%= user_name %>></p>
+            </li>
+            <%})%>
+        </ul>
+    <%}%>
 </ul>
 </body>
 </html>

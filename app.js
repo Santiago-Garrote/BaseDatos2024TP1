@@ -97,7 +97,7 @@ app.get('/userProfile', (req, res) => {
                 console.log(err);
                 res.status(500).send('Error en la búsqueda.');
             } else {
-                res.render('user/userProfile', {user_name: result[0]['user_name'], user_email: result[0]['user_email'], user_loggedIn: userLoggedIn});
+                res.render('user/userProfile', {user_name: result[0]['user_name'], user_super: result[0]['user_super'], user_email: result[0]['user_email'], user_loggedIn: userLoggedIn});
             }
         })
     } else {
