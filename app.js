@@ -252,7 +252,8 @@ app.get('/buscar', (req, res) => {
                     }
                     //Ruta para directores
                     db.all(
-                        'SELECT person.person_id as id, person_name FROM person JOIN movie_crew ON person.person_id = movie_crew.person_id WHERE movie_crew.job = \'Director\' AND person_name LIKE ? GROUP BY person.person_id, person_name',
+                        'SELECT person.person_id as id, person_name FROM person JOIN movie_crew ON person.person_id ' +
+                        '= movie_crew.person_id WHERE movie_crew.job = \'Director\' AND person_name LIKE ? GROUP BY person.person_id, person_name',
                         [`%${searchTerm}%`],
                         (err, directorList) => {
                             if (err) {
