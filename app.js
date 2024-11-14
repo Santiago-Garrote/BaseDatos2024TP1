@@ -311,7 +311,7 @@ app.get('/pelicula/:id', (req, res) => {
                             popularity: rows[0].popularity,
                             budget: rows[0].budget,
                             homepage: rows[0].homepage,
-                            reveneu: rows[0].reveneu,
+                            revenue: rows[0].revenue,
                             movie_status: rows[0].movie_status,
                             tagline: rows[0].tagline,
                             vote_average: rows[0].vote_average,
