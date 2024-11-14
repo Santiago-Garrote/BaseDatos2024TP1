@@ -381,7 +381,7 @@ app.get('/pelicula/:id', (req, res) => {
                         });
 
                         res.render('pelicula', {movies: movieData});
-                    };
+                    }
                 }
             );
         });
