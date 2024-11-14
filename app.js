@@ -7,6 +7,9 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
+let firstAccess = true;
+let afterDeletion = false;
+
 app.use(express.urlencoded({ extended: true })); // Necesario para procesar datos de formularios
 app.use(express.json()); // Para procesar JSON, si es necesario
 
@@ -23,14 +26,22 @@ app.set('view engine', 'ejs');
 
 // Ruta para el inicio de sesión
 app.get('/login', (req, res) => {
-    const user_name = req.query.uName;
-    const user_password = req.query.uPassword;
+        let user_name = req.query.uName;
+        let user_password = req.query.uPassword;
+    if (afterDeletion || firstAccess) { //evita que crashee la página
+        user_name = undefined;
+        user_password = undefined;
+    }
 
-    if (user_name === undefined  || user_password === undefined) {
-        res.render('login');
+    if (firstAccess) { //evita mostrar el mensaje de campo vacío cuando se ingresa por primera vez
+        firstAccess = false;
+        res.render('login', {emptyData: false, afterDeletion: false});
+    } else if (user_name === undefined || user_password === undefined) {
+        res.render('login', {emptyData: true, afterDeletion: false});
     } else if (user_name === "-1" && user_password === "-1") {
+        firstAccess = true;
         res.cookie('user_id', "-1");
-        res.redirect('./index');
+        res.render('index', {userLoggedIn: false});
     } else {
         const userQuery = 'SELECT * FROM User WHERE user_name = ? AND user_password = ?';
         db.all(
@@ -45,7 +56,7 @@ app.get('/login', (req, res) => {
                         res.cookie('user_id', result[0]["user_id"]);
                         res.redirect('./index');
                     } else {
-                        res.render('login');
+                        res.render('login', {emptyData: true, afterDeletion: false});
                     }
                 }
             }
@@ -59,6 +70,12 @@ app.get('/signUp', (req, res) => {
     const userName = req.query.uName;
     const userPassword = req.query.uPassword;
     const userEmail = req.query.uEmail;
+    firstAccess = true;
+
+    if (userName === '' || userPassword === '' || userEmail === '') {
+        res.render('signUp', {error: true, errorMessage: 'Ingrese sus datos.'});
+        return;
+    }
 
     const signUpQuery = 'INSERT INTO User(user_name, user_password, user_email, user_super) VALUES (?,?,?, 0) RETURNING user_id'
     db.all(
@@ -67,14 +84,19 @@ app.get('/signUp', (req, res) => {
         (err, result) => {
             if (userName !== undefined  && userPassword !== undefined) {
                 if (err) {
-                    console.log(err);
-                    res.status(500).send('Error en el registro.');
+                    if(err.code === 'SQLITE_CONSTRAINT' && err.message.includes('User.user_email') || err.code === 'SQLITE_CONSTRAINT' && err.message.includes('User.user_name') ){
+                        res.render('signUp', {error: true, errorMessage: "Email o usuario ya registrado"});
+                    }
+                    else{
+                        console.log(err);
+                        res.render('signup', {error: true, errorMessage: "Algo falló en el registro"});
+                    }
                 } else{
                     res.cookie('user_id', result[0]["user_id"]);
                     res.render('signUpExitoso', {user_name: userName, user_password: userPassword});
                 }
             } else {
-                res.render('signUp');
+                res.render('signUp', {error: false, errorMessage: ''});
             }
         }
     )
@@ -82,7 +104,10 @@ app.get('/signUp', (req, res) => {
 
 // Ruta para buscador
 app.get('/index', (req, res) => {
-    res.render('index');
+    const userId = req.cookies['user_id'];
+    const userLoggedIn = userId !== "-1";
+    firstAccess = true;
+    res.render('index', {userLoggedIn: userLoggedIn});
 })
 
 // Ruta para cuenta
@@ -91,19 +116,43 @@ app.get('/userProfile', (req, res) => {
     const userLoggedIn = userId !== "-1"
 
     const userDataQuery = 'SELECT * FROM User WHERE user_id = ?';
+    const favoritesQuery = 'SELECT movie.title, movie_user.rating, movie_user.review ' +
+        'FROM movie_user ' +
+        'JOIN movie ON movie_user.movie_id = movie.movie_id ' +
+        'WHERE movie_user.user_id = ?';
+
     if (userId !== "-1") {
         db.all(userDataQuery, [userId], (err, result) => {
             if (err) {
                 console.log(err);
-                res.status(500).send('Error en la búsqueda.');
+                res.status(500).send('Error en la búsqueda de datos del usuario.');
             } else {
                 res.render('user/userProfile', {user_name: result[0]['user_name'], user_super: result[0]['user_super'], user_email: result[0]['user_email'], user_loggedIn: userLoggedIn});
+                // Obtener las películas favoritas del usuario (sin filtro 'favorite')
+                db.all(favoritesQuery, [userId], (err, favorites) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).send('Error en la búsqueda de películas favoritas.');
+                    } else {
+                        // Pasar la información del usuario y sus películas favoritas a la vista
+                        res.render('user/userProfile', {
+                            user_name: result[0]['user_name'],
+                            user_email: result[0]['user_email'],
+                            user_loggedIn: userLoggedIn,
+                            favorites: favorites
+                        });
+                    }
+                });
             }
-        })
+        });
     } else {
-        res.render('user/userProfile', {user_name: 'Anonymous', user_email: 'Anonymous', user_loggedIn: userLoggedIn});
+        res.render('user/userProfile', {
+            user_name: 'Anonymous',
+            user_email: 'Anonymous',
+            user_loggedIn: userLoggedIn
+        });
     }
-})
+});
 
 // Ruta para modificar un usuario
 app.get('/modifyUser', (req, res) => {
@@ -120,7 +169,7 @@ app.get('/modifyUser', (req, res) => {
                 console.log(err);
                 res.status(500).send('Error en la modificación.');
             } else{
-                res.redirect(`/login`);
+                res.redirect('/login?emptyData=false&afterDeletion=false}');
             }
         })
     } else {
@@ -128,9 +177,9 @@ app.get('/modifyUser', (req, res) => {
         db.all(
             userDataQuery,
             [userId],
-         (err, result) => {
+            (err, result) => {
                 res.render('user/modifyUser', {user_name: result[0]['user_name'], user_password: result[0]['user_password'], user_email: result[0]['user_email'], user_loggedIn: userLoggedIn});
-         }
+            }
         )
     }
 })
@@ -151,7 +200,8 @@ app.get('/deleteUser', (req, res) => {
                     console.log(err);
                     res.status(500).send('Error en la búsqueda.');
                 } else{
-                    res.redirect('/login')
+                    firstAccess = true;
+                    res.redirect('/login');
                 }
             }
         )
@@ -457,6 +507,126 @@ app.get('/buscar-keyword/', (req, res) => {
         }
     );
 })
+
+// Agregar una película a favoritos
+app.post('/addFavorite', (req, res) => {
+    const { user_id, movie_id, rating, review } = req.body;
+
+    // Debugging logs
+    console.log('Add Favorite Data:', req.body);
+
+    // Validación básica
+    if (!user_id || !movie_id) {
+        return res.status(400).send('Error: user_id or movie_id is missing.');
+    }
+
+    // Verificar si el usuario ya tiene esta película en sus favoritos
+    const checkSql = `SELECT 1 FROM movie_user WHERE user_id = ? AND movie_id = ?`;
+    db.get(checkSql, [user_id, movie_id], (err, row) => {
+        if (err) {
+            console.error('Database Error (Check Existence):', err.message);
+            return res.status(500).send('Error al verificar favoritos.');
+        }
+
+        if (row) {
+            // Si la película ya está en favoritos, devolver error o actualizar los datos
+            return res.render('error', {
+                message: 'Error: la película ya está en favoritos.',
+                link: '/userProfile' // You can customize this as needed
+            });
+        }
+
+        // Si no está duplicada, proceder a insertar
+        const insertSql = `INSERT INTO movie_user (user_id, movie_id, rating, review) VALUES (?, ?, ?, ?)`;
+        db.run(insertSql, [user_id, movie_id, rating, review], function (err) {
+            if (err) {
+                console.error('Database Error (Insert):', err.message);
+                return res.status(500).send('Error al agregar a favoritos.');
+            }
+            res.redirect(`/userProfile`);
+        });
+    });
+});
+
+
+
+
+// Eliminar una película de favoritos
+app.post('/removeFavorite', (req, res) => {
+    const { user_id, movie_id } = req.body;
+
+    console.log('Remove Favorite Data:', req.body);
+
+    // Validar que se recibieron los datos necesarios
+    if (!user_id || !movie_id) {
+        return res.status(400).send('Error: user_id or movie_id is missing.');
+    }
+
+    // Verificar si la película está en los favoritos del usuario
+    const checkSql = `SELECT 1 FROM movie_user WHERE user_id = ? AND movie_id = ?`;
+    db.get(checkSql, [user_id, movie_id], (err, row) => {
+        if (err) {
+            console.error('Database Error (Check Existence):', err.message);
+            return res.status(500).send('Error al verificar si la película está en favoritos.');
+        }
+
+        if (!row) {
+            // Si la película no está en los favoritos, no hacer nada
+            return res.render('error', {
+                message: 'Error: la película no está en favoritos.',
+                link: '/userProfile' // You can customize this as needed
+            });
+        }
+
+        // Si la película está en los favoritos, proceder a eliminarla
+        const sql = `DELETE FROM movie_user WHERE user_id = ? AND movie_id = ?`;
+        db.run(sql, [user_id, movie_id], function (err) {
+            if (err) {
+                console.error('Database Error:', err.message);
+                return res.status(500).send('Error al eliminar de favoritos.');
+            }
+            res.redirect(`/userProfile`);
+        });
+    });
+});
+
+// Mostrar las películas favoritas de un usuario
+app.get('/user/:user_id', (req, res) => {
+    const user_id = req.params.user_id;
+
+    // Consultas para obtener los datos del usuario y sus películas favoritas
+    const userDataQuery = `SELECT * FROM User WHERE user_id = ?`;
+    const favoriteMoviesQuery = `
+        SELECT movie.title, movie_user.rating, movie_user.review
+        FROM movie_user
+        JOIN movie ON movie_user.movie_id = movie.movie_id
+        WHERE movie_user.user_id = ?
+    `;
+
+    // Obtener datos del usuario
+    db.get(userDataQuery, [user_id], (err, user) => {
+        if (err) {
+            console.error('Error al obtener datos del usuario:', err.message);
+            return res.status(500).send('Error al obtener datos del usuario.');
+        }
+
+        // Obtener películas favoritas
+        db.all(favoriteMoviesQuery, [user_id], (err, favorites) => {
+            if (err) {
+                console.error('Error al obtener películas favoritas:', err.message);
+                return res.status(500).send('Error al obtener películas favoritas.');
+            }
+
+            // Renderizar la vista con los datos del usuario y las películas favoritas
+            res.render('user/userProfile', {
+                user_name: user.user_name,
+                user_email: user.user_email,
+                favorites: favorites || []
+            });
+        });
+    });
+});
+
 
 // Iniciar el servidor
 app.listen(port, () => {

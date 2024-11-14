@@ -9,7 +9,8 @@
 <h3>Email: <%= user_email %></h3>
 <% if (user_loggedIn) {%>
     <button onclick="window.location.href= 'http://localhost:3000/deleteUser'">Eliminar cuenta</button>
-    <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar informacion</button>
+    <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar información</button>
+    <button onclick="window.location.href= 'http://localhost:3000/login'">Salir de la cuenta</button>
 <%}%>
 <div id="inicio"><a href="/index">Inicio</a></div>
 <h2>Películas favoritas de <%= user_name %></h2>
