@@ -12,5 +12,19 @@
     <button onclick="window.location.href= 'http://localhost:3000/modifyUser'">Modificar informacion</button>
 <%}%>
 <div id="inicio"><a href="/index">Inicio</a></div>
+<h2>Películas favoritas de <%= user_name %></h2>
+<ul>
+    <% if (favorites && favorites.length > 0) { %>
+        <% favorites.forEach(favorite => { %>
+            <li>
+                <strong><%= favorite.title %></strong>
+                <p>Puntuación: <%= favorite.rating || 'Sin puntuación' %></p>
+                <p>Opinión: <%= favorite.review || 'Sin opinión' %></p>
+            </li>
+        <% }) %>
+    <% } else { %>
+        <p>No tienes películas favoritas.</p>
+    <% } %>
+</ul>
 </body>
 </html>
