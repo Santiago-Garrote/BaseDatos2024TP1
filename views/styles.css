@@ -65,7 +65,6 @@ a:hover {
 }
 .background {
     min-height: 120vh;
-    background: url(images/background-1591229_640.webp);
     background-size: cover;
     background-position: center;
     display: flex;
