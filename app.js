@@ -307,32 +307,24 @@ app.get('/pelicula/:id', (req, res) => {
             }
             //Toma especificamente al elenco, crew, directores y escritores
             db.all(
-                `        
-        SELECT
-        *,
-        g.genre_name AS genre,
-        k.keyword_name AS keyword,
-        l.language_name AS language,
-        pc.company_name AS company,
-        c.country_name AS country,
-        movie_user.user_id AS user_id,
-        movie_user.rating AS rating,
-        movie_user.review AS reviews
-        FROM
-        movie
-        JOIN movie_genres mg ON movie.movie_id = mg.movie_id
-        JOIN genre g ON mg.genre_id = g.genre_id
-        JOIN movie_company mc ON movie.movie_id = mc.movie_id
-        JOIN production_company pc ON mc.company_id = pc.company_id
-        JOIN production_country p ON movie.movie_id = p.movie_id
-        JOIN main.country c ON p.country_id = c.country_id
-        JOIN movie_languages ml ON movie.movie_id = ml.movie_id
-        JOIN language l ON l.language_id = ml.language_id
-        JOIN movie_keywords mk ON movie.movie_id = mk.movie_id
-        JOIN keyword k ON mk.keyword_id = k.keyword_id
-        NATURAL JOIN (movie_user NATURAL JOIN User)
-        WHERE movie.movie_id = ? GROUP BY movie.movie_id, movie_user.user_id, movie_user.rating, movie_user.review;
-                        `,
+                `
+            SELECT
+            movie.*,
+                actor.person_name as actor_name,
+                actor.person_id as actor_id,
+                crew_member.person_name as crew_member_name,
+                crew_member.person_id as crew_member_id,
+                movie_cast.character_name,
+                movie_cast.cast_order,
+                department.department_name,
+                movie_crew.job
+            FROM movie
+            LEFT JOIN movie_cast ON movie.movie_id = movie_cast.movie_id
+            LEFT JOIN person as actor ON movie_cast.person_id = actor.person_id
+            LEFT JOIN movie_crew ON movie.movie_id = movie_crew.movie_id
+            LEFT JOIN department ON movie_crew.department_id = department.department_id
+            LEFT JOIN person as crew_member ON crew_member.person_id = movie_crew.person_id
+            WHERE movie.movie_id = ? `,
                 [movieId],
                 (err, rows) => {
                     if (err) {
@@ -341,7 +333,6 @@ app.get('/pelicula/:id', (req, res) => {
                     } else if (rows.length === 0) {
                         res.status(404).send('Película no encontrada.');
                     } else {
-                        console.log(rows)
                         // Organizar los datos en un objeto de película con toda la informacion de movie
                         const movieData = {
                             genre: result[0].genre,
@@ -354,7 +345,7 @@ app.get('/pelicula/:id', (req, res) => {
                             popularity: rows[0].popularity,
                             budget: rows[0].budget,
                             homepage: rows[0].homepage,
-                            reveneu: rows[0].reveneu,
+                            revenue: rows[0].revenue,
                             movie_status: rows[0].movie_status,
                             tagline: rows[0].tagline,
                             vote_average: rows[0].vote_average,
@@ -364,7 +355,6 @@ app.get('/pelicula/:id', (req, res) => {
                             overview: rows[0].overview,
                             reviews: result.map((row) => ({
                                 user_id: row.user_id,
-                                user_name: row.user_name,
                                 review: row.reviews,
                                 rating: row.rating
                             })),
@@ -374,7 +364,7 @@ app.get('/pelicula/:id', (req, res) => {
                             crew: [],
 
                         };
-                        console.log(movieData.reviews);
+
                         // Crear un objeto para almacenar directores
                         rows.forEach((row) => {
                             if (row.crew_member_id && row.crew_member_name && row.department_name && row.job) {
@@ -463,10 +453,7 @@ app.get('/pelicula/:id', (req, res) => {
                                 }
                             }
                         });
-                        db.all(
-                            'SELECT * FROM User WHERE user_id = ?',
-                            []
-                        )
+
                         res.render('pelicula', {movies: movieData, user_id: req.cookies['user_id']});
                     }
                 }
