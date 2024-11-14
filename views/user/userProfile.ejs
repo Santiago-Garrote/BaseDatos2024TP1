@@ -122,7 +122,7 @@
         <% if (favorites && favorites.length > 0) { %>
             <% favorites.forEach(favorite => { %>
                 <li>
-                    <strong><%= favorite.title %></strong>
+                    <a href="http://localhost:3000/pelicula/<%= favorite.movie_id %>"><strong><%= favorite.title %></strong></a>
                     <p>Puntuación: <%= favorite.rating || 'Sin puntuación' %></p>
                     <p>Opinión: <%= favorite.review || 'Sin opinión' %></p>
                 </li>

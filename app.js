@@ -117,7 +117,8 @@ app.get('/userProfile', (req, res) => {
     const userLoggedIn = userId !== "-1";
 
     const userDataQuery = 'SELECT * FROM User WHERE user_id = ?';
-    const favoritesQuery = 'SELECT movie.title, movie_user.rating, movie_user.review ' +
+    const favoritesQuery =
+        'SELECT movie.title, movie_user.rating, movie_user.review, Movie.movie_id ' +
         'FROM movie_user ' +
         'JOIN movie ON movie_user.movie_id = movie.movie_id ' +
         'WHERE movie_user.user_id = ?';
@@ -626,7 +627,7 @@ app.get('/user/:user_id', (req, res) => {
     // Consultas para obtener los datos del usuario y sus películas favoritas
     const userDataQuery = `SELECT * FROM User WHERE user_id = ?`;
     const favoriteMoviesQuery = `
-        SELECT movie.title, movie_user.rating, movie_user.review
+        SELECT movie.title, movie_user.rating, movie_user.review, Movie.movie_id
         FROM movie_user
         JOIN movie ON movie_user.movie_id = movie.movie_id
         WHERE movie_user.user_id = ?
@@ -647,6 +648,7 @@ app.get('/user/:user_id', (req, res) => {
             }
 
             // Renderizar la vista con los datos del usuario y las películas favoritas
+            console.log("a");
             res.render('user/userProfile', {
                 user_id: user_id,
                 user_name: user.user_name,
