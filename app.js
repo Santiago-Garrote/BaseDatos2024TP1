@@ -561,7 +561,7 @@ app.post('/addFavorite', (req, res) => {
         if (row) {
             // Si la película ya está en favoritos, devolver error o actualizar los datos
             return res.render('error', {
-                message: 'Error: la película ya está en favoritos.',
+                message: 'Error: la película ya está reseñada.',
                 link: '/userProfile' // You can customize this as needed
             });
         }
@@ -620,44 +620,6 @@ app.post('/removeFavorite', (req, res) => {
     });
 });
 
-// Mostrar las películas favoritas de un usuario
-app.get('/user/:user_id', (req, res) => {
-    const user_id = req.params.user_id;
-
-    // Consultas para obtener los datos del usuario y sus películas favoritas
-    const userDataQuery = `SELECT * FROM User WHERE user_id = ?`;
-    const favoriteMoviesQuery = `
-        SELECT movie.title, movie_user.rating, movie_user.review, Movie.movie_id
-        FROM movie_user
-        JOIN movie ON movie_user.movie_id = movie.movie_id
-        WHERE movie_user.user_id = ?
-    `;
-
-    // Obtener datos del usuario
-    db.get(userDataQuery, [user_id], (err, user) => {
-        if (err) {
-            console.error('Error al obtener datos del usuario:', err.message);
-            return res.status(500).send('Error al obtener datos del usuario.');
-        }
-
-        // Obtener películas favoritas
-        db.all(favoriteMoviesQuery, [user_id], (err, favorites) => {
-            if (err) {
-                console.error('Error al obtener películas favoritas:', err.message);
-                return res.status(500).send('Error al obtener películas favoritas.');
-            }
-
-            // Renderizar la vista con los datos del usuario y las películas favoritas
-            console.log("a");
-            res.render('user/userProfile', {
-                user_id: user_id,
-                user_name: user.user_name,
-                user_email: user.user_email,
-                favorites: favorites || []
-            });
-        });
-    });
-});
 
 
 // Iniciar el servidor

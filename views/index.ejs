@@ -24,6 +24,13 @@
             text-align: center;
         }
 
+
+        #user a {
+            text-decoration: none;
+            font-size: 16px;
+            color: #0078d4;
+        }
+
         input[type="text"] {
             padding: 10px;
             width: 300px;
@@ -51,12 +58,13 @@
 </head>
 <body>
 <h1>MovieWeb</h1>
+<div id="user">
 <% if (userLoggedIn) { %>
-    <div id="user"><a href="/userProfile">Mi perfil</a></div>
+    <a href="/userProfile">Mi perfil</a>
 <% } else { %>
-    <div id="user"><a href="/login">Login</a></div>
+    <a href="/login">Login</a>
 <% } %>
-<br><br>
+</div>
 <form action="/buscar" method="GET">
     <input type="text" name="q" placeholder="Buscar películas..." />
     <button type="submit">Buscar</button> <br>

@@ -14,6 +14,12 @@
             margin: 0;
         }
 
+        #user a {
+            text-decoration: none;
+            font-size: 16px;
+            color: #0078d4;
+        }
+
         h1 {
             font-size: 36px;
             color: #333333;
@@ -51,12 +57,15 @@
 </head>
 <body>
 <h1>MovieWeb-Keyword</h1>
-<% if (userLoggedIn) { %>
-    <div id="user"><a href="/userProfile">Mi perfil</a></div>
-<% } else { %>
-    <div id="user"><a href="/login">Login</a></div>
-<% } %>
-<br><br>
+
+<div id="user">
+    <% if (userLoggedIn) { %>
+        <a href="/userProfile">Mi perfil</a>
+    <% } else { %>
+        <a href="/login">Login</a>
+    <% } %>
+</div>
+
 <form action="/buscar-keyword" method="GET">
     <input type="text" name="q" placeholder="Buscar por keywords..." />
     <button type="submit">Buscar</button><br>

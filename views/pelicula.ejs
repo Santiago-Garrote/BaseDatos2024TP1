@@ -28,6 +28,8 @@
             margin-top: 10px;
         }
 
+
+
         .container {
             width: 80%;
             max-width: 1200px;
@@ -63,7 +65,7 @@
         .button-container {
             margin-top: 20px;
             display: flex;
-            justify-content: space-between;
+            justify-content: space-evenly;
         }
 
         button {
@@ -120,6 +122,14 @@
         .cast-list, .crew-list {
             font-size: 1em;
             color: #555;
+        }
+        #delete-review {
+            align-self: auto;
+            width: 100%;
+        }
+        #review{
+            width: 384px;
+            height: 90px;
         }
     </style>
 </head>
@@ -219,24 +229,27 @@
             <input type="hidden" name="user_id" value="<%= user_id %>">
             <input type="hidden" name="movie_id" value="<%= movies.id %>">
             <button type="submit">Agregar reseña</button>
+
             <label for="rating">Puntuación:</label>
             <input type="number" name="rating" min="1" max="5">
+            <br>
             <label for="review">Opinión:</label>
-            <textarea name="review"></textarea>
+            <textarea name="review" id="review"></textarea>
+
         </form>
+        <div id="delete-review">
         <form action="/removeFavorite" method="POST">
             <input type="hidden" name="user_id" value="<%= user_id %>">
             <input type="hidden" name="movie_id" value="<%= movies.id %>">
             <button type="submit">Eliminar reseña</button>
         </form>
+        </div>
+        <% } else { %>
+            <p>Por favor, inicia sesión para gestionar tus películas favoritas.</p>
+        <% } %>
     </div>
-<% } else { %>
-    <p>Por favor, inicia sesión para gestionar tus películas favoritas.</p>
-<% } %>
 
-<div class="back-to-home">
-    <a href="/index">Volver al Inicio</a>
-</div>
+<div class="back-to-home"><a href="/keyword">Inicio</a></div>
 
 </body>
 </html>
