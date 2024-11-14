@@ -1,12 +1,5 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #ffffff;
-    background-size: cover;
-    background-repeat: no-repeat;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
     height: 100vh;
     margin: 0;
 }
@@ -69,6 +62,16 @@ a:hover {
 #inicio {
     margin: 0 auto; /* Centrar horizontalmente el elemento */
     padding: 50px; /* Agregar un poco de espacio interior para que se vea mejor */
+}
+.background {
+    min-height: 120vh;
+    background: url(images/background-1591229_640.webp);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
 }
 .register{
     margin-top: 20px;
